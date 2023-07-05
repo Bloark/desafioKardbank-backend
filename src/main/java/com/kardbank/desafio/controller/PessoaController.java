@@ -1,79 +1,66 @@
 package com.kardbank.desafio.controller;
 
 
-
+import com.kardbank.desafio.model.Pessoa;
+import com.kardbank.desafio.repository.PessoaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
-import com.kardbank.desafio.repository.PessoaRepository;
-import com.kardbank.desafio.model.Pessoa;
-
-
-
 @RestController
-@RequestMapping("pessoas")
+@RequestMapping("/pessoas")
 public class PessoaController {
-
     @Autowired
     private PessoaRepository pessoaRepository;
 
-    @GetMapping
-    public ResponseEntity<Iterable<Pessoa>> listarPessoas() {
-        return ResponseEntity.ok(pessoaRepository.listarPessoas());
+    // Endpoint para listar todas as pessoas
+
+    @GetMapping("/pessoas")
+    public List<Pessoa> listarPessoas() {
+        return pessoaRepository.findAll();
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Pessoa> listarPessoasId(@PathVariable Long id) {
-        Optional<Pessoa> pessoa = pessoaRepository.findById(id);
-        if (pessoa.isPresent()) {
-            return ResponseEntity.ok(pessoa.get());
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    // Endpoint para buscar uma pessoa por ID
+    @GetMapping("/pessoas/{id}")
+    public ResponseEntity<Object> buscarPessoaPorId(@PathVariable Long id) {
+        Optional<Pessoa> optionalPessoa = pessoaRepository.findById(id);
+        return optionalPessoa.<ResponseEntity<Object>>map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @PostMapping
-    public Pessoa adicionarPessoa(@RequestBody Pessoa pessoa) {
-        // Realize validações aqui antes de salvar a pessoa
+    // Endpoint para criar uma nova pessoa
+    @PostMapping("/pessoas")
+    public Pessoa criarPessoa(@RequestBody Pessoa pessoa) {
         return pessoaRepository.save(pessoa);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Pessoa> atualizarPessoa(@PathVariable Long id, @RequestBody Pessoa pessoaAtualizada) {
-        Optional<Pessoa> pessoaExistente = pessoaRepository.findById(id);
-
-        if (pessoaExistente.isPresent()) {
-            Pessoa pessoa = pessoaExistente.get();
+    // Endpoint para atualizar uma pessoa existente
+    @PutMapping("/pessoas/{id}")
+    public ResponseEntity<Object> atualizarPessoa(@PathVariable Long id, @RequestBody Pessoa pessoaAtualizada) {
+        Optional<Pessoa> optionalPessoa = pessoaRepository.findById(id);
+        if (optionalPessoa.isPresent()) {
+            Pessoa pessoa = optionalPessoa.get();
             pessoa.setNome(pessoaAtualizada.getNome());
-            pessoa.setCpf(pessoaAtualizada.getCpf());
-
-            // Realize outras atualizações necessárias nos campos da pessoa
-
-            Pessoa pessoaAtualizadaNoBanco = pessoaRepository.save(pessoa);
-            return ResponseEntity.ok(pessoaAtualizada);
+            pessoa.setEndereco(pessoaAtualizada.getEndereco());
+            pessoa.setContatos(pessoaAtualizada.getContatos());
+            pessoaRepository.save(pessoa);
+            return ResponseEntity.ok(pessoa);
         } else {
             return ResponseEntity.notFound().build();
         }
     }
 
-    @DeleteMapping("/{id}")
+    // Endpoint para deletar uma pessoa
+    @DeleteMapping("/pessoas/{id}")
     public ResponseEntity<Void> deletarPessoa(@PathVariable Long id) {
-        if (pessoaRepository.existsById(id)) {
-            pessoaRepository.deleteById(id);
+        Optional<Pessoa> optionalPessoa = pessoaRepository.findById(id);
+        if (optionalPessoa.isPresent()) {
+            pessoaRepository.delete(optionalPessoa.get());
             return ResponseEntity.noContent().build();
         } else {
             return ResponseEntity.notFound().build();
         }
     }
-
 }

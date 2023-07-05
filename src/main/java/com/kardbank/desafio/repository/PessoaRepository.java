@@ -1,18 +1,28 @@
 package com.kardbank.desafio.repository;
 
+
 import com.kardbank.desafio.model.Pessoa;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-public interface PessoaRepository extends JpaRepository <Pessoa, Long>{
+import java.util.List;
 
-    Iterable<Pessoa> listarPessoas();
+@Repository
+public interface PessoaRepository extends JpaRepository<Pessoa, Long> {
+    // Método para buscar uma pessoa pelo nome
+    List<Pessoa> findByNome(String nome);
 
-    Pessoa listarPessoasId(Long id);
+    // Método para buscar pessoas por cidade do endereço
+    List<Pessoa> findByEnderecoCidade(String cidade);
 
-    void adicionarPessoa(Pessoa pessoa);
+    // Método para buscar pessoas por estado do endereço
+    List<Pessoa> findByEnderecoEstado(String estado);
 
-    void atualizarPessoa(Long id, Pessoa pessoa);
+    // Método para buscar pessoas por telefone do contato
+    List<Pessoa> findByContatosTelefone(String telefone);
 
-    void deletarPessoa(Long id);
-
+    // Método para buscar pessoas por email do contato
+    List<Pessoa> findByContatosEmail(String email);
 }
+
+
