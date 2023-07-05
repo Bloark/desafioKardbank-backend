@@ -1,7 +1,7 @@
 package com.kardbank.desafio.model;
 
-import jakarta.persistence.*;
 
+import javax.persistence.*;
 import java.util.List;
 
 

@@ -17,27 +17,26 @@ public class PessoaController {
     private PessoaRepository pessoaRepository;
 
     // Endpoint para listar todas as pessoas
-
-    @GetMapping("/pessoas")
+    @GetMapping()
     public List<Pessoa> listarPessoas() {
         return pessoaRepository.findAll();
     }
 
     // Endpoint para buscar uma pessoa por ID
-    @GetMapping("/pessoas/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<Object> buscarPessoaPorId(@PathVariable Long id) {
         Optional<Pessoa> optionalPessoa = pessoaRepository.findById(id);
         return optionalPessoa.<ResponseEntity<Object>>map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     // Endpoint para criar uma nova pessoa
-    @PostMapping("/pessoas")
+    @PostMapping()
     public Pessoa criarPessoa(@RequestBody Pessoa pessoa) {
         return pessoaRepository.save(pessoa);
     }
 
     // Endpoint para atualizar uma pessoa existente
-    @PutMapping("/pessoas/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<Object> atualizarPessoa(@PathVariable Long id, @RequestBody Pessoa pessoaAtualizada) {
         Optional<Pessoa> optionalPessoa = pessoaRepository.findById(id);
         if (optionalPessoa.isPresent()) {
@@ -53,7 +52,7 @@ public class PessoaController {
     }
 
     // Endpoint para deletar uma pessoa
-    @DeleteMapping("/pessoas/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletarPessoa(@PathVariable Long id) {
         Optional<Pessoa> optionalPessoa = pessoaRepository.findById(id);
         if (optionalPessoa.isPresent()) {
