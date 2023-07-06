@@ -23,6 +23,9 @@ public interface PessoaRepository extends JpaRepository<Pessoa, Long> {
 
     // Método para buscar pessoas por email do contato
     List<Pessoa> findByContatosEmail(String email);
+
+    // Método para validação de cpf
+    boolean existsByCpf(String cpf);
 }
 
 

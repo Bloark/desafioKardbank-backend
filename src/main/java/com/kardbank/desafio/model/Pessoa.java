@@ -20,8 +20,9 @@ public class Pessoa {
     @OneToMany(cascade = CascadeType.ALL)
     private List<Contato> contatos;
 
-    // getters e setters
+    private String cpf;
 
+    // getters e setters
 
     public Long getId() {
         return id;
@@ -55,13 +56,11 @@ public class Pessoa {
         this.contatos = contatos;
     }
 
-    @Override
-    public String toString() {
-        return "Pessoa{" +
-                "id=" + id +
-                ", nome='" + nome + '\'' +
-                ", endereco=" + endereco +
-                ", contatos=" + contatos +
-                '}';
+    public String getCpf() {
+        return cpf;
+    }
+
+    public void setCpf(String cpf) {
+        this.cpf = cpf;
     }
 }

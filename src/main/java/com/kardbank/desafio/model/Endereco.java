@@ -19,7 +19,6 @@ public class Endereco {
 
     //getters e setters
 
-
     public Long getId() {
         return id;
     }

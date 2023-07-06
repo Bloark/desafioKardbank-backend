@@ -1,14 +1,24 @@
 package com.kardbank.desafio.controller;
 
+import java.io.IOException;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kardbank.desafio.model.Contato;
+
 
 import com.kardbank.desafio.model.Pessoa;
 import com.kardbank.desafio.repository.PessoaRepository;
+import org.apache.http.client.fluent.Content;
+import org.apache.http.client.fluent.Request;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+
+import static org.apache.catalina.connector.Request.*;
 
 @RestController
 @RequestMapping("/pessoas")
@@ -32,6 +42,26 @@ public class PessoaController {
     // Endpoint para criar uma nova pessoa
     @PostMapping()
     public Pessoa criarPessoa(@RequestBody Pessoa pessoa) {
+        // Verifica se o CPF é válido
+        if (!validarCpf(pessoa.getCpf())) {
+            throw new RuntimeException("CPF inválido. Não é possível adicionar a pessoa.");
+        }
+
+        // Verifica se o CPF já existe no banco de dados
+        if (pessoaRepository.existsByCpf(pessoa.getCpf())) {
+            throw new RuntimeException("CPF já existe. Não é possível adicionar a pessoa.");
+        }
+
+        // Realize outras validações aqui antes de salvar a pessoa
+
+        List<Contato> contatos = pessoa.getContatos();
+        for (Contato contato : contatos) {
+
+            if (!validarTelefone(contato.getTelefone())) {
+                throw new RuntimeException("Telefone inválido. Não é possível adicionar a pessoa.");
+            }
+        }
+
         return pessoaRepository.save(pessoa);
     }
 
@@ -62,4 +92,58 @@ public class PessoaController {
             return ResponseEntity.notFound().build();
         }
     }
+
+
+    private boolean validarCpf(String cpf) {
+        // Implemente a lógica de validação do CPF aqui
+
+        // Verifica se o CPF possui 11 dígitos
+        if (cpf.length() != 11) {
+            return false;
+        }
+        // Outras regras de validação do CPF...
+
+        return true;
+    }
+
+    private static final String API_KEY = "ab4907d4c9b04707a1243074f2254e69";
+    private static final String API_URL = "https://phonevalidation.abstractapi.com/v1/";
+
+
+    private boolean validarTelefone(String telefone) {
+        try {
+            String requestUrl = API_URL + "?api_key=" + API_KEY + "&phone=" + telefone;
+
+            Content content = Request.Get(requestUrl).execute().returnContent();
+
+            // Analise a resposta da API para determinar se o telefone é válido
+           // Implemente a lógica de verificação do retorno da API aqui
+            System.out.println(content);
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode jsonNode = objectMapper.readTree(content.asString());
+            boolean isValid = jsonNode.get("valid").asBoolean();
+            return isValid;
+
+        } catch (IOException error) {
+            System.out.println(error);
+            return false;
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
