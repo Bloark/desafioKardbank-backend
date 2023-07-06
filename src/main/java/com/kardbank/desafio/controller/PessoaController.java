@@ -12,6 +12,7 @@ import com.kardbank.desafio.repository.PessoaRepository;
 import org.apache.http.client.fluent.Content;
 import org.apache.http.client.fluent.Request;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,6 +23,7 @@ import static org.apache.catalina.connector.Request.*;
 
 @RestController
 @RequestMapping("/pessoas")
+@ControllerAdvice
 public class PessoaController {
     @Autowired
     private PessoaRepository pessoaRepository;
@@ -93,8 +95,8 @@ public class PessoaController {
         }
     }
 
-
-    private boolean validarCpf(String cpf) {
+    // Método para validar o CPF
+    public boolean validarCpf(String cpf) {
         // Implemente a lógica de validação do CPF aqui
 
         // Verifica se o CPF possui 11 dígitos
@@ -106,44 +108,36 @@ public class PessoaController {
         return true;
     }
 
+    // Constantes da API de validação de telefone
     private static final String API_KEY = "ab4907d4c9b04707a1243074f2254e69";
     private static final String API_URL = "https://phonevalidation.abstractapi.com/v1/";
 
-
-    private boolean validarTelefone(String telefone) {
+    // Método para validar o telefone
+    public boolean validarTelefone(String telefone) {
         try {
-            String requestUrl = API_URL + "?api_key=" + API_KEY + "&phone=" + telefone;
+            String requestUrl = API_URL + "?api_key=" + API_KEY + "&phone="+ telefone;
 
             Content content = Request.Get(requestUrl).execute().returnContent();
 
             // Analise a resposta da API para determinar se o telefone é válido
-           // Implemente a lógica de verificação do retorno da API aqui
-            System.out.println(content);
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode jsonNode = objectMapper.readTree(content.asString());
             boolean isValid = jsonNode.get("valid").asBoolean();
-            return isValid;
 
+            return isValid;
         } catch (IOException error) {
             System.out.println(error);
             return false;
         }
     }
 
+    // Tratamento de exceções
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<Object> handleRuntimeException(RuntimeException ex) {
+        String mensagemErro = ex.getMessage();
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+        ErrorResponse erro = new ErrorResponse(mensagemErro, status.value());
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        return ResponseEntity.status(status).body(erro);
+    }
 }

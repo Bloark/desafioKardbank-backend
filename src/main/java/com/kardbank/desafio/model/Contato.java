@@ -16,6 +16,19 @@ public class Contato {
     private String telefone;
     private String email;
 
+    public Contato() {
+        // Construtor vazio
+    }
+
+    public Contato(Long id, String telefone, String email) {
+        this.id = id;
+        this.telefone = telefone;
+        this.email = email;
+    }
+
+    public Contato(String telefone) {
+    }
+
     public String getTelefone() {
         return telefone;
     }

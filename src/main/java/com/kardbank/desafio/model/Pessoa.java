@@ -22,7 +22,21 @@ public class Pessoa {
 
     private String cpf;
 
-    // getters e setters
+    public Pessoa() {
+        // Construtor vazio
+    }
+
+    public Pessoa(Long id, String nome, Endereco endereco, List<Contato> contatos, String cpf) {
+        this.id = id;
+        this.nome = nome;
+        this.endereco = endereco;
+        this.contatos = contatos;
+        this.cpf = cpf;
+    }
+
+    public Pessoa(Long id, String nome, String endereço, Contato telefone) {
+    }
+// getters e setters
 
     public Long getId() {
         return id;
