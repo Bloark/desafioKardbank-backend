@@ -100,7 +100,7 @@ public class PessoaController {
         // Implemente a lógica de validação do CPF aqui
 
         // Verifica se o CPF possui 11 dígitos
-        if (cpf.length() != 11) {
+        if (cpf == null || cpf.isEmpty() || cpf.length() != 11) {
             return false;
         }
         // Outras regras de validação do CPF...

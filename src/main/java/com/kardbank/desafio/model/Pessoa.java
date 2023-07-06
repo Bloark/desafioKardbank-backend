@@ -1,6 +1,8 @@
 package com.kardbank.desafio.model;
 
 
+import com.sun.istack.NotNull;
+
 import javax.persistence.*;
 import java.util.List;
 
@@ -19,7 +21,7 @@ public class Pessoa {
 
     @OneToMany(cascade = CascadeType.ALL)
     private List<Contato> contatos;
-
+    @NotNull
     private String cpf;
 
     public Pessoa() {
