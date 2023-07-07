@@ -10,47 +10,54 @@ import javax.persistence.GenerationType;
 
 @Entity
 public class Contato {
+    // ...
+
+    public enum Tipo {
+        TELEFONE, EMAIL
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String telefone;
-    private String email;
 
-    public Contato() {
-        // Construtor vazio
+    @Enumerated(EnumType.STRING)
+    private Tipo tipo;
+
+    private String valor;
+
+    // ...
+
+    public Long getId() {
+        return id;
     }
 
-    public Contato(Long id, String telefone, String email) {
+    public void setId(Long id) {
         this.id = id;
-        this.telefone = telefone;
-        this.email = email;
     }
 
-    public Contato(String telefone) {
+    public String getValor() {
+        return valor;
     }
 
-    public String getTelefone() {
-        return telefone;
+    public void setValor(String valor) {
+        this.valor = valor;
     }
 
-    public void setTelefone(String telefone) {
-        this.telefone = telefone;
+    public Tipo getTipo() {
+        return tipo;
     }
 
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
+    public void setTipo(Tipo tipo) {
+        this.tipo = tipo;
     }
 
     @Override
     public String toString() {
         return "Contato{" +
                 "id=" + id +
-                ", telefone='" + telefone + '\'' +
-                ", email='" + email + '\'' +
+                ", tipo=" + tipo +
+                ", valor='" + valor + '\'' +
                 '}';
     }
 }
+
