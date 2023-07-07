@@ -41,6 +41,7 @@ public class PessoaController {
 
     @PostMapping()
     public ResponseEntity<Pessoa> criarPessoa(@RequestBody Pessoa pessoa) {
+        //Verificar se o CPF é válido
         if (!validarCpf(pessoa.getCpf())) {
             throw new RuntimeException("CPF inválido. Não é possível adicionar a pessoa.");
         }
@@ -68,6 +69,21 @@ public class PessoaController {
             pessoa.setNome(pessoaAtualizada.getNome());
             pessoa.setEndereco(pessoaAtualizada.getEndereco());
             pessoa.setContatos(pessoaAtualizada.getContatos());
+
+            //Verificar se o CPF é válido
+            if (!validarCpf(pessoa.getCpf())) {
+                throw new RuntimeException("CPF inválido. Não é possível adicionar a pessoa.");
+            }
+
+            // Verifica se o telefone é válido
+            for (Contato contato : pessoa.getContatos()) {
+                if (contato.getTipo() == Contato.Tipo.TELEFONE) {
+                    String telefone = contato.getValor();
+                    if (!telefoneService.validarTelefone(telefone)) {
+                        throw new RuntimeException("Telefone inválido. Não é possível adicionar a pessoa.");
+                    }
+                }
+            }
             pessoaRepository.save(pessoa);
             return ResponseEntity.ok(pessoa);
         } else {
