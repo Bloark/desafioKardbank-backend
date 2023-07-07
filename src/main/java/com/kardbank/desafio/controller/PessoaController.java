@@ -1,18 +1,16 @@
 package com.kardbank.desafio.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.kardbank.desafio.model.Contato;
 import com.kardbank.desafio.model.Pessoa;
 import com.kardbank.desafio.repository.PessoaRepository;
 import com.kardbank.desafio.service.TelefoneService;
-import org.apache.http.client.fluent.Content;
-import org.apache.http.client.fluent.Request;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.io.IOException;
+
 import java.util.List;
 import java.util.Optional;
 

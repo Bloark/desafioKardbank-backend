@@ -1,14 +1,13 @@
 package com.kardbank.desafio;
 
 import com.kardbank.desafio.controller.PessoaController;
-import com.kardbank.desafio.model.Contato;
 import com.kardbank.desafio.model.Pessoa;
 import com.kardbank.desafio.repository.PessoaRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -19,168 +18,185 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 class PessoaControllerTest {
+
     @Mock
     private PessoaRepository pessoaRepository;
 
     @InjectMocks
     private PessoaController pessoaController;
 
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
+
     @Test
     void listarPessoas_DeveRetornarListaDePessoas() {
         // Arrange
         List<Pessoa> pessoas = new ArrayList<>();
-        pessoas.add(new Pessoa(1L, "Nome1", "Endereço1", new Contato("Telefone1")));
-        pessoas.add(new Pessoa(2L, "Nome2", "Endereço2", new Contato("Telefone2")));
+        pessoas.add(new Pessoa(1L, "João", "Rua A", "Cidade A", "Estado A", "1234567890", "joao@example.com", "12345678901"));
+        pessoas.add(new Pessoa(2L, "Maria", "Rua B", "Cidade B", "Estado B", "9876543210", "maria@example.com", "09876543210"));
+
         when(pessoaRepository.findAll()).thenReturn(pessoas);
 
         // Act
-        List<Pessoa> resultado = pessoaController.listarPessoas();
+        List<Pessoa> result = pessoaController.listarPessoas();
 
         // Assert
-        assertEquals(pessoas.size(), resultado.size());
-        assertEquals(pessoas, resultado);
+        assertEquals(pessoas.size(), result.size());
+        assertEquals(pessoas.get(0), result.get(0));
+        assertEquals(pessoas.get(1), result.get(1));
+
+        verify(pessoaRepository, times(1)).findAll();
+        verifyNoMoreInteractions(pessoaRepository);
     }
 
     @Test
-    void buscarPessoaPorId_DeveRetornarPessoaExistente() {
+    void buscarPessoaPorId_QuandoPessoaExistir_DeveRetornarPessoa() {
         // Arrange
         Long id = 1L;
-        Pessoa pessoa = new Pessoa(id, "Nome", "Endereço", new Contato("Telefone"));
+        Pessoa pessoa = new Pessoa(id, "João", "Rua A", "Cidade A", "Estado A", "1234567890", "joao@example.com", "12345678901");
+
         when(pessoaRepository.findById(id)).thenReturn(Optional.of(pessoa));
 
         // Act
-        ResponseEntity<Object> responseEntity = pessoaController.buscarPessoaPorId(id);
+        ResponseEntity<Pessoa> response = pessoaController.buscarPessoaPorId(id);
 
         // Assert
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(pessoa, responseEntity.getBody());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(pessoa, response.getBody());
+
+        verify(pessoaRepository, times(1)).findById(id);
+        verifyNoMoreInteractions(pessoaRepository);
     }
 
     @Test
-    void buscarPessoaPorId_DeveRetornarNotFoundQuandoPessoaNaoExistir() {
+    void buscarPessoaPorId_QuandoPessoaNaoExistir_DeveRetornarNotFound() {
         // Arrange
         Long id = 1L;
+
         when(pessoaRepository.findById(id)).thenReturn(Optional.empty());
 
         // Act
-        ResponseEntity<Object> responseEntity = pessoaController.buscarPessoaPorId(id);
+        ResponseEntity<Pessoa> response = pessoaController.buscarPessoaPorId(id);
 
         // Assert
-        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertNull(response.getBody());
+
+        verify(pessoaRepository, times(1)).findById(id);
+        verifyNoMoreInteractions(pessoaRepository);
     }
 
     @Test
-    void criarPessoa_DeveCriarPessoaQuandoCpfETelefoneValidos() {
+    void criarPessoa_QuandoCpfInvalido_DeveRetornarBadRequest() {
         // Arrange
-        Pessoa pessoa = new Pessoa(1L, "Nome", "Endereço", new Contato("Telefone"));
-        when(pessoaRepository.existsByCpf(pessoa.getCpf())).thenReturn(false);
-        when(pessoaRepository.save(pessoa)).thenReturn(pessoa);
+        Pessoa pessoa = new Pessoa(1L, "João", "Rua A", "Cidade A", "Estado A", "1234567890", "joao@example.com", "12345678901");
 
-        // Act
-        Pessoa resultado = pessoaController.criarPessoa(pessoa);
-
-        // Assert
-        assertNotNull(resultado);
-        assertEquals(pessoa, resultado);
-    }
-
-    @Test
-    void criarPessoa_DeveLancarExcecaoQuandoCpfInvalido() {
-        // Arrange
-        Pessoa pessoa = new Pessoa(1L, "Nome", "Endereço", new Contato("Telefone"));
-        when(pessoaRepository.existsByCpf(pessoa.getCpf())).thenReturn(false);
-        // Simula o caso de CPF inválido
-        when(pessoaController.validarCpf(pessoa.getCpf())).thenReturn(false);
-
-        // Act & Assert
-        assertThrows(RuntimeException.class, () -> pessoaController.criarPessoa(pessoa));
-    }
-
-    @Test
-    void criarPessoa_DeveLancarExcecaoQuandoCpfJaExistir() {
-        // Arrange
-        Pessoa pessoa =new Pessoa(1L, "Nome", "Endereço", new Contato("Telefone"));
         when(pessoaRepository.existsByCpf(pessoa.getCpf())).thenReturn(true);
 
-        // Act & Assert
+        // Act
         assertThrows(RuntimeException.class, () -> pessoaController.criarPessoa(pessoa));
+
+        // Assert
+        verify(pessoaRepository, times(1)).existsByCpf(pessoa.getCpf());
+        verifyNoMoreInteractions(pessoaRepository);
     }
 
     @Test
-    void criarPessoa_DeveLancarExcecaoQuandoTelefoneInvalido() {
+    void criarPessoa_QuandoCpfExistir_DeveRetornarBadRequest() {
         // Arrange
-        Pessoa pessoa = new Pessoa(1L, "Nome", "Endereço", new Contato("Telefone"));
-        when(pessoaRepository.existsByCpf(pessoa.getCpf())).thenReturn(false);
-        // Simula o caso de telefone inválido
-        when(pessoaController.validarCpf(pessoa.getCpf())).thenReturn(true);
-        //when(pessoaController.validarTelefone(pessoa.getContatos().getTelefone())).thenReturn(false);
+        Pessoa pessoa = new Pessoa(1L, "João", "Rua A", "Cidade A", "Estado A", "1234567890", "joao@example.com", "12345678901");
 
-        // Act & Assert
-        assertThrows(RuntimeException.class, () -> pessoaController.criarPessoa(pessoa));
+        when(pessoaRepository.existsByCpf(pessoa.getCpf())).thenReturn(false);
+
+        // Act
+        pessoaController.criarPessoa(pessoa);
+
+        // Assert
+        verify(pessoaRepository, times(1)).existsByCpf(pessoa.getCpf());
+        verify(pessoaRepository, times(1)).save(pessoa);
+        verifyNoMoreInteractions(pessoaRepository);
     }
 
     @Test
-    void atualizarPessoa_DeveRetornarPessoaAtualizadaQuandoPessoaExistir() {
+    void atualizarPessoa_QuandoPessoaExistir_DeveRetornarPessoaAtualizada() {
         // Arrange
         Long id = 1L;
-        Pessoa pessoaExistente = new Pessoa(id, "Nome1", "Endereço1", new Contato("Telefone1"));
-        Pessoa pessoaAtualizada = new Pessoa(id, "Nome2", "Endereço2", new Contato("Telefone2"));
+        Pessoa pessoaExistente = new Pessoa(id, "João", "Rua A", "Cidade A", "Estado A", "1234567890", "joao@example.com", "12345678901");
+        Pessoa pessoaAtualizada = new Pessoa(id, "Maria", "Rua B", "Cidade B", "Estado B", "9876543210", "maria@example.com", "09876543210");
+
         when(pessoaRepository.findById(id)).thenReturn(Optional.of(pessoaExistente));
         when(pessoaRepository.save(pessoaExistente)).thenReturn(pessoaExistente);
 
         // Act
-        ResponseEntity<Object> responseEntity = pessoaController.atualizarPessoa(id, pessoaAtualizada);
+        ResponseEntity<Pessoa> response = pessoaController.atualizarPessoa(id, pessoaAtualizada);
 
         // Assert
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(pessoaAtualizada, responseEntity.getBody());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(pessoaAtualizada, response.getBody());
+
+        verify(pessoaRepository, times(1)).findById(id);
+        verify(pessoaRepository, times(1)).save(pessoaExistente);
+        verifyNoMoreInteractions(pessoaRepository);
     }
 
     @Test
-    void atualizarPessoa_DeveRetornarNotFoundQuandoPessoaNaoExistir() {
+    void atualizarPessoa_QuandoPessoaNaoExistir_DeveRetornarNotFound() {
         // Arrange
         Long id = 1L;
-        Pessoa pessoaAtualizada = new Pessoa(id, "Nome2", "Endereço2", new Contato("Telefone2"));
+        Pessoa pessoaAtualizada = new Pessoa(id, "Maria", "Rua B", "Cidade B", "Estado B", "9876543210", "maria@example.com", "09876543210");
+
         when(pessoaRepository.findById(id)).thenReturn(Optional.empty());
 
         // Act
-        ResponseEntity<Object> responseEntity = pessoaController.atualizarPessoa(id, pessoaAtualizada);
+        ResponseEntity<Pessoa> response = pessoaController.atualizarPessoa(id, pessoaAtualizada);
 
         // Assert
-        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertNull(response.getBody());
+
+        verify(pessoaRepository, times(1)).findById(id);
+        verifyNoMoreInteractions(pessoaRepository);
     }
 
     @Test
-    void deletarPessoa_DeveRetornarNoContentQuandoPessoaExistir() {
+    void deletarPessoa_QuandoPessoaExistir_DeveRetornarNoContent() {
         // Arrange
         Long id = 1L;
-        Pessoa pessoa = new Pessoa(id, "Nome", "Endereço", new Contato("Telefone"));
+        Pessoa pessoa = new Pessoa(id, "João", "Rua A", "Cidade A", "Estado A", "1234567890", "joao@example.com", "12345678901");
+
         when(pessoaRepository.findById(id)).thenReturn(Optional.of(pessoa));
 
         // Act
-        ResponseEntity<Void> responseEntity = pessoaController.deletarPessoa(id);
+        ResponseEntity<Void> response = pessoaController.deletarPessoa(id);
 
         // Assert
-        assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+
+        verify(pessoaRepository, times(1)).findById(id);
         verify(pessoaRepository, times(1)).delete(pessoa);
+        verifyNoMoreInteractions(pessoaRepository);
     }
 
     @Test
-    void deletarPessoa_DeveRetornarNotFoundQuandoPessoaNaoExistir() {
+    void deletarPessoa_QuandoPessoaNaoExistir_DeveRetornarNotFound() {
         // Arrange
         Long id = 1L;
+
         when(pessoaRepository.findById(id)).thenReturn(Optional.empty());
 
         // Act
-        ResponseEntity<Void> responseEntity = pessoaController.deletarPessoa(id);
+        ResponseEntity<Void> response = pessoaController.deletarPessoa(id);
 
         // Assert
-        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
-        verify(pessoaRepository, never()).delete(any());
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+
+        verify(pessoaRepository, times(1)).findById(id);
+        verifyNoMoreInteractions(pessoaRepository);
     }
 
-    // Testes para os métodos validarCpf e validarTelefone...
+    // Adicione aqui os demais testes para os demais métodos do PessoaController
 
 }

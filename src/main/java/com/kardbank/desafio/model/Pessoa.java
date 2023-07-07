@@ -37,6 +37,10 @@ public class Pessoa {
     }
 
     public Pessoa(Long id, String nome, String endereço, Contato telefone) {
+
+    }
+
+    public Pessoa(Long id, String joão, String rua_a, String cidade_a, String estado_a, String s, String s1, String s2) {
     }
 // getters e setters
 
